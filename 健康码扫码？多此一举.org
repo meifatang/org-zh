@@ -1,0 +1,22 @@
+#+TITLE: 健康码扫码？多此一举
+#+DATE: <2022-03-28 Mon>
+
+杭州的主要场合健康码从安保人员肉眼看，到需要扫描现场的二维码，过程类似扫码签到。每次挤着一堆人在那里对着一个二维码扫要扫就莫名急躁。
+
+幸好咱是专业的。借助苹果 Shortcuts 实现了不扫描二维码也照样签到，在不违反政策的情况下实现了最懒的方案。
+
+最终效果是启动 Shortcut 在事先列出的场所中选取即可方便得转到支付宝健康码页面，并显示以扫码。Shortcut 制作过程如下
+
+* 解析我主要去的几个场所的二维码信息
+例如某地点的二维码信息是如下字符串
+
+=alipays://platformapi/startapp?appId=2021002175684865&page=pages%2Findex%2Findex&nbupdate=syncforce&query=communityCode%3D3301910910141468427002530312197%26communityName%3D%E6%B2%88%E5%A1%98%E6%A1%A5%E7%AB%99=
+
+这是苹果所谓的 URL Scheme，可以发现如果在 iOS 上点击此链接即可自动跳转到相应支付宝健康码页面，并显示以扫码。接下来就很简单，将常用几个地点的 URL Scheme 列出，需要哪个就点哪个就好了。
+
+* 捷径
+** 菜单
+** Safari 打开 URL Scheme
+** 即可自动跳转到支付宝健康码
+** 捷径分享
+https://www.icloud.com/shortcuts/c1bc392785a64c778d9d55d9d59352e8
