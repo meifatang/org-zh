@@ -1,0 +1,710 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-04-22 Fri 22:57 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</title>
+<meta name="author" content="Felix M. Tang" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+<link rel="stylesheet" href="./style.css" type="text/css">
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</h1>
+
+<div id="outline-container-org16a2d7e" class="outline-2">
+<h2 id="org16a2d7e"><span class="section-number-2">1.</span> 起因</h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org8fbf61b" class="outline-3">
+<h3 id="org8fbf61b"><span class="section-number-3">1.1.</span> 因为需要为没有网口的宁美魔方 mini 主机，开启 PXE 网络启动和 Ubuntu 系统自动安装工作流</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+以方便结合 Ubuntu 20.04 LTS Server 最新的 autoinstall 功能全自动批量安装系统。虽然该主机的 UEFI 有 PXE 网络启动选项，但因为苦于没有以太网接口，需要外接 USB 转以太网口转换器才可以连接网线。于是就有了一段漫长的踩坑旅程。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcc95d33" class="outline-3">
+<h3 id="orgcc95d33"><span class="section-number-3">1.2.</span> 所以一路探索挖了包括 PXE 搭建、Linux 内核编译、ISO 镜像打包和 Linux 启动等多个坑</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+事后追溯，实现最终目标正确路径如下：
+</p>
+
+<ul class="org-ul">
+<li>使用 USB 转以太网口转换器连接网线，解决有线连接问题</li>
+<li>编译 iPXE 制作成镜像 U 盘启动，以解决默认 PXE 无 USB 转以 太网驱动问题</li>
+<li>搭建 PXE 服务，并改写 grub 配置问题，以实现自动安装</li>
+<li>往 Ubuntu 20.04 LTS Server 默认内核添加USB转以太网驱动，以实现 autoinstall 自动安装 Ubuntu 过程中可以连接有线网络</li>
+<li>最终结果，直接用一批修改过启动镜像的 TF 卡自动启动代替</li>
+</ul>
+
+<p>
+现将过程记录如下。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org3ffa12d" class="outline-2">
+<h2 id="org3ffa12d"><span class="section-number-2">2.</span> USB 转以太网转换器</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+拿到的宁美魔方非常小巧，外部接口有两个 USB 3.0，一个用作电源接口的 USB-TypeC，一个 HDMI，一个 TF 卡槽和一个 3.5mm 耳机孔，没有提供 RJ-45 以太网接口。
+</p>
+
+<p>
+而 PXE 启动需要一个网络连接，首先就是有线网络连接。（无线网络事后来看通过 iPXE 理论上可以支持，没有过多尝试）
+</p>
+
+<p>
+首先尝试官宣支持 PXE 的 Dell Adapter - USB 3.0 to Ethernet PXE Boot 失败，原因可能是需要 DELL UEFI 的配合。
+</p>
+
+<p>
+然后准备某宝随机挑选了一款 USB 转以太网转换器，希望可以通过改造或替换添加过相关驱动的 UEFI 以达到目的，需要改造自然首选开源，选定的开源 UEFI 方案是 coreboot，经验证它不支持对手上的设备采取较简单的/在线烧录/方式，而复杂的方式则是需要拆机用烧录器实现，因此结论是 UEFI 替换过程及其复杂，不具有操作性。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgb399393" class="outline-2">
+<h2 id="orgb399393"><span class="section-number-2">3.</span> 编译 iPXE 启动镜像</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+除了动 UEFI 的心思，接下来的思路是将 PXE 动能单拎出来，先启动到一个第三方 PXE 上，通过这层跳板使用 PXE 服务。
+</p>
+
+<p>
+首先想到的是 Clonezilla，它有一个 iPXE 启动选项，通过 U 盘启动到 Clonezilla 镜像，选择 iPXE 启动，进而实现 PXE 服务。想法很美好，尝试之后结论是 Clonezilla 的 iPXE 没法驱动 USB转以太网转换器。
+</p>
+
+<p>
+转而直接研究 iPXE，通过其未被 Google 索引的论坛找到了为 USB 转以太网转换器特别准备的编译选项。参考 iPXE 官网文档，具体过程如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">git clone git://git.ipxe.org/ipxe.git
+<span style="color: #ff9029;">cd</span> ipxe/src
+make bin-x86_64-efi/ecm.usb
+sudo dd <span style="color: #4ac964;">if</span>=bin-x86_64-efi/ecm.usb <span style="color: #4ac964;">of</span>=/dev/sdc
+</pre>
+</div>
+
+<p>
+其中 <code>bin-x86_64-efi/ecm.usb</code> 三部分意义分别是平台、驱动、类型。
+</p>
+
+<p>
+这样，一个专门启动 iPXE 的跳板镜像就完成了。它使用 GPT 分区表（因为默认 UEFI 识别 GPT 分区表，这样就省去了 MBR 分区表需要进 UEFI 开启 CSM 兼容模式的麻烦）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org800b415" class="outline-2">
+<h2 id="org800b415"><span class="section-number-2">4.</span> 部署 PXE 服务</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+前面的步骤是为了给主机提供一个可以使用的 PXE 客户端，接下来的任务是创建一个 PXE 服务。PXE 服务需要 DHCP、TFTP 和一个外部文件服务（这里使用 HTTP ）。
+</p>
+</div>
+
+<div id="outline-container-org654c47c" class="outline-3">
+<h3 id="org654c47c"><span class="section-number-3">4.1.</span> HTTP 服务</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+托管 Linux 启动 ISO 镜像、autoinstall 需要的配置文件。简单用一个 Nginx 服务器完成。/var/www/html/ 目录下放 ubuntu-20.04.1-live-server-amd64.iso 文件；根据 autoinstall 要求建立一个 autoinstall 文件夹，里面建一个空 meta-data 文件，一个 user-data 文件，此文件内容如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-yaml"><span style="color: #4ac964;">autoinstall</span>:
+  <span style="color: #ffff0b;">apt</span>:
+    <span style="color: #4ac964;">geoip</span>: <span style="color: #34c8d8;">true</span>
+    <span style="color: #4ac964;">preserve_sources_list</span>: <span style="color: #34c8d8;">false</span>
+    <span style="color: #4ac964;">primary</span>:
+    - <span style="color: #4ac964;">arches</span>: [amd64, i386]
+      <span style="color: #ffff0b;">uri</span>: https://mirrors.ustc.edu.cn/ubuntu
+    - <span style="color: #4ac964;">arches</span>: [default]
+      <span style="color: #ffff0b;">uri</span>: http://ports.ubuntu.com/ubuntu-ports
+  <span style="color: #4ac964;">identity</span>: {
+    <span style="color: #ffff0b;">hostname</span>: miner,
+    <span style="color: #4ac964;">password</span>: $6$KnLqBbpGRQm0rcFt$GGIWrQPmdoIFHTA9QmotnNlJOeyiUU4ovjlxEZ3Z6G7r.gQepVGjVyX64zRFpkkZymFveBsCr2/FSs7DlDmXF1,
+    <span style="color: #4ac964;">realname</span>: felix,
+    <span style="color: #4ac964;">username</span>: felix
+  <span style="color: #4ac964;">}</span>
+<span style="color: #4ac964;">  keyboard</span>: {<span style="color: #4ac964;">layout</span>: us, <span style="color: #4ac964;">toggle</span>: null, <span style="color: #4ac964;">variant</span>: <span style="color: #ff7fff;">''</span>}
+  <span style="color: #4ac964;">locale</span>: en_US.UTF-8
+  <span style="color: #4ac964;">network</span>:
+    <span style="color: #4ac964;">ethernets</span>:
+      <span style="color: #4ac964;">enp1s0</span>: {<span style="color: #4ac964;">dhcp4</span>: true}
+    <span style="color: #4ac964;">version</span>: 2
+  <span style="color: #4ac964;">ssh</span>:
+    <span style="color: #4ac964;">allow-pw</span>: <span style="color: #34c8d8;">true</span>
+    <span style="color: #4ac964;">authorized-keys</span>: [<span style="color: #ff7fff;">"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9FPt8Y3YWiyhcMOlbhCvZfhOxVUfSMu56Y+bOd5q5juSHhMbncWnd9BPybGV9Xkiz0m6JAfK3/iJkNX0QrAgM+bLHH2nW2aJlDeil3Uz4ZuZ4XYHzM77MqMZ/nmPPMVPpuBy0K58kWl8rrVB4X55kdLC4lGvn14gpoWlP6j81O7xmuVCBi2uCsUyZv3SwJbaXKHaEkX5Yy7m3Sxrvi46eqhk0inlovOly5T3vJ4QSOFr7dHsPw2oCtPXPAH5X+KJkHada3nRfVoI2G4qu5ALne4/C+H7IZ8F2APStZQn5swjfm2iTLS3WPYfuX7YGH3pc90VTLGh1G6mS09EiDg8rZ5lDiReQN8c6iNUfTTDSOgxf1MAPRITFlT2ct3jFr4AEu9VYTC87EIhSeeXoOo6jNGW/LDu4ckSjdKl8Fo3b4hzUO1OlkVKkTzUkt3Ad/UPc3vJs1s708+/60fgkh/Po58PcLvpfW8kzPrQOZ4l8/tjrJu6IYEnwYGMRL0K8pHc= felix"</span>]
+    <span style="color: #4ac964;">install-server</span>: <span style="color: #34c8d8;">true</span>
+  <span style="color: #4ac964;">storage</span>:
+    <span style="color: #4ac964;">grub</span>:
+      <span style="color: #4ac964;">reorder_uefi</span>: <span style="color: #34c8d8;">false</span>
+    <span style="color: #4ac964;">config</span>:
+    - {<span style="color: #4ac964;">ptable</span>: gpt, <span style="color: #4ac964;">path</span>: /dev/sda, <span style="color: #4ac964;">wipe</span>: superblock-recursive,
+       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">name</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">grub_device</span>: false, <span style="color: #4ac964;">type</span>: disk, <span style="color: #4ac964;">id</span>: disk-sda}
+
+    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 268435456, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: boot, <span style="color: #4ac964;">number</span>: 1,
+       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">grub_device</span>: true, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-1}
+    - {<span style="color: #4ac964;">fstype</span>: fat32, <span style="color: #4ac964;">volume</span>: partition-1, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-1}
+
+    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 8589934592, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">number</span>: 2,
+       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-2}
+    - {<span style="color: #4ac964;">fstype</span>: ext4, <span style="color: #4ac964;">volume</span>: partition-2, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-2}
+
+    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 119174856704, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">number</span>: 3,
+       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-3}
+    - {<span style="color: #4ac964;">fstype</span>: ext4, <span style="color: #4ac964;">volume</span>: partition-3, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-3}
+
+    - {<span style="color: #4ac964;">device</span>: format-1, <span style="color: #4ac964;">path</span>: /boot/efi, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-1}
+    - {<span style="color: #4ac964;">device</span>: format-2, <span style="color: #4ac964;">path</span>: /, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-2}
+    - {<span style="color: #4ac964;">device</span>: format-3, <span style="color: #4ac964;">path</span>: /media, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-3}
+  <span style="color: #4ac964;">packages</span>:
+  - net-tools
+  <span style="color: #4ac964;">late-commands</span>:
+  - curtin in-target --target=/target -- apt update
+  - curtin in-target --target=/target -- apt upgrade -y
+  - curtin in-target --target=/target -- mkdir /media/pi/file -p
+  - curtin in-target --target=/target -- curl http://192.168.1.222/file.tar.gz --output file.tar.gz
+  - curtin in-target --target=/target -- tar -zxvf file.tar.gz
+  - curtin in-target --target=/target -- mv file /media/pi/
+  - curtin in-target --target=/target -- curl http://192.168.1.222/file2.tar.gz --output file2.tar.gz
+  - curtin in-target --target=/target -- tar -zxvf file2.tar.gz
+  - curtin in-target -- echo <span style="color: #ff7fff;">"*/1 * * * * /home/felix/file2/startup.sh"</span> &gt;&gt; /var/spool/cron/crontabs/root
+  <span style="color: #4ac964;">version</span>: 1
+</pre>
+</div>
+
+<p>
+文件定义了 apt 源、主机名、用户名、密码、键盘、网络、分区方案，额外软件包，额外执行命令等信息，之后安装内核启动时会根据参数下载这个文件并完成自动安装。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org49f6e03" class="outline-3">
+<h3 id="org49f6e03"><span class="section-number-3">4.2.</span> 带额外字段的 DHCP 服务，TFTP 服务</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+DHCP 和 TFTP 是分开的两个服务，这里选用 dnsmasq 一个小型 DNS 服务附带 DHCP 和 TFTP 功能，可完美解决这里的需求。
+</p>
+
+<p>
+dnsmasq 默认两个配置文件 /etc/dnsmasq.conf 内容如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">felix@master:~$ grep <span style="color: #ff7fff;">'^[^#]'</span>  /etc/dnsmasq.conf
+<span style="color: #4ac964;">port</span>=53 <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dns&#26381;&#21153;&#31471;&#21475;</span>
+domain-needed
+dhcp-option=option:router,192.168.33.222        <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dhcp&#26381;&#21153;&#22120;</span>
+enable-tftp     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#24320;&#21551;tftp&#26381;&#21153;</span>
+tftp-root=/var/ftpd     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#37197;&#32622;tftp&#20869;&#23481;&#20301;&#32622;</span>
+log-dhcp
+dhcp-range=192.168.33.100,192.168.33.199,2h     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dhcp&#20998;&#37197;&#22320;&#22336;&#33539;&#22260;</span>
+dhcp-boot=grubnetx64.efi        <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">pxe&#32593;&#32476;&#21551;&#21160;&#30340;efi&#21551;&#21160;&#25991;&#20214;</span>
+dhcp-host=84:39:be:9c:0b:f3,192.168.33.222      <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#32465;&#23450;&#26576;&#26381;&#21153;&#22120;ip&#22320;&#22336;</span>
+</pre>
+</div>
+<p>
+解决 dnsmasq 和 systemd-resolved.service 的冲突问题，简单关闭掉 systemd-resolved.service？忘了。
+</p>
+
+<p>
+现在看 /var/ftpd 中文件，这是 PXE 客户端读取并执行的文件，
+</p>
+
+<pre class="example">
+felix@master:/var/ftpd$ ls
+casper  grub  grubnetx64.efi  ldlinux.c32  pxelinux.0  pxelinux.cfg
+</pre>
+
+<p>
+grubnetx64.efi 是要执行的 efi程序，配套 grub 文件夹中的配置文件 =/var/ftpd/grub/grub.cfg=，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #ffff0b;">if</span> loadfont /boot/grub/font.pf2 ; <span style="color: #ffff0b;">then</span>
+    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxmode</span>=auto
+    insmod efi_gop
+    insmod efi_uga
+    insmod gfxterm
+    terminal_output gfxterm
+<span style="color: #ffff0b;">fi</span>
+
+<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">menu_color_normal</span>=white/black
+<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">menu_color_highlight</span>=black/light-gray
+
+<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">timeout</span>=5
+menuentry <span style="color: #ff7fff;">"Install Ubuntu Server"</span> <span style="color: #938e84;">{</span>
+    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+    initrd      /casper/initrd
+<span style="color: #938e84;">}</span>
+menuentry <span style="color: #ff7fff;">"Install Ubuntu Server (safe graphics)"</span> <span style="color: #938e84;">{</span>
+    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  nomodeset <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.1-live-server-amd64.iso ---
+    initrd      /casper/initrd
+<span style="color: #938e84;">}</span>
+grub_platform
+<span style="color: #ffff0b;">if</span> <span style="color: #938e84;">[</span> <span style="color: #ff7fff;">"$grub_platform"</span> = <span style="color: #ff7fff;">"efi"</span> <span style="color: #938e84;">]</span>; <span style="color: #ffff0b;">then</span>
+    menuentry <span style="color: #ff7fff;">'Boot from next volume'</span> <span style="color: #938e84;">{</span>
+        <span style="color: #ffff0b;">exit</span>
+    <span style="color: #938e84;">}</span>
+    menuentry <span style="color: #ff7fff;">'UEFI Firmware Settings'</span> <span style="color: #938e84;">{</span>
+        fwsetup
+    <span style="color: #938e84;">}</span>
+<span style="color: #ffff0b;">fi</span>
+</pre>
+</div>
+
+<p>
+其中，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">linux   /casper/vmlinuz   quiet  <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+initrd  /casper/initrd
+</pre>
+</div>
+
+<p>
+指导 tftp 下的内核启动 192.168.33.222 的 HTTP 服务中的 .iso 镜像，Initial ramdisk 指定为 tftp 服务下的 /casper/initrd，至此 PXE 服务畅通。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaa4c25d" class="outline-2">
+<h2 id="orgaa4c25d"><span class="section-number-2">5.</span> 编译 Ubuntu 内核，并打包 iso 启动镜像</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+接下来的方向应该是读取到 .iso 文件，开启一段愉快的网络安装体验，前提是上一步的 <code>/casper/vmlinuz</code> 有 USB 转以太网驱动的话。很遗憾，没有。从 Ubuntu Server 安装镜像提取到的 <code>/casper/vmlinuz</code> 不带此驱动，从对应桌面版 Ubuntu 安装镜像提取到的虽然有此驱动，但是无法使用 autoinstall 功能。
+</p>
+
+<p>
+接下来的工作只需要为 /casper/vmlinuz 编译一个带 USB 转以太网驱动的内核以替代前者，参考这里， 修复 _apt 权限问题，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">sudo chown -Rv _apt:root /var/cache/apt/archives/partial/
+sudo chmod -Rv 700 /var/cache/apt/archives/partial/
+</pre>
+</div>
+
+<p>
+使用 apt 下载 Linux 内核代码当前目录，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">sudo apt source linux-source-5.4.0
+</pre>
+</div>
+
+<p>
+编译作业待验证
+</p>
+
+<p>
+下一步是改造官方的 .iso 镜像，以为安装内核植入 autoinstall 参数，以实现全自动安装过程。基本思路是首先拆解 .iso 镜像，编辑对应文件，更新 md5 文件，打包回 .iso 自定义镜像。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaaf5d60" class="outline-2">
+<h2 id="orgaaf5d60"><span class="section-number-2">6.</span> 最终，使用修改过的 Ubuntu 启动镜像 TF 卡插卡直接启动</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+实际中放弃了全自动安装过程，转而直接改造 .iso 镜像的启动参数，注入 auto install 自动启动，然后把这个镜像烧录进 TF 卡不也可以实现半自动化的安装吗！这时候发现一个可以无脑定制 Ubuntu 镜像的工具 Cubic，其讲 Ubuntu 镜像的结构直观得展示在出来，并可以随意改造。
+</p>
+
+<p>
+很自然，用 Cubic 直接改造镜像加入自动安装机制。不同的是放弃 PXE 启动，转而找了一批 TF 卡，用改造后的启动镜像，实现半自动安装。
+</p>
+
+<p>
+改造的地方包括在根目录放入一个 <code>autoinstall</code> 文件夹，参考 0.5.1 的内容；修改 /boot/grub/grub.cfg 的内核启动参数为，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">linux /casper/vmliuz <span style="color: #4ac964;">boot</span>=casper quiet autoinstall <span style="color: #ff7fff;">"ds=noclouds;s=/cdrom/autoinstall/"</span> ---
+initrd /casper/initrd.lz
+</pre>
+</div>
+
+<p>
+casper 参数意为启动 live system，这里 autoinstall 用了 cloud-init 中的 noclouds。事实上 cloud-init 已经是云服务中系统初始化的标准，其他 Linux 发行版私以为也有类似形式的功能。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8727bf8" class="outline-2">
+<h2 id="org8727bf8"><span class="section-number-2">7.</span> 小结</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+理想流程：UEFI -&gt; iPXE -&gt; USB 转以太网转换器 -&gt; Ubuntu Installer (modified to use auotinstall) -&gt; Ubuntu
+</p>
+
+<p>
+实际流程：UEFI -&gt; Ubuntu Installer (modified to use auotinstall) -&gt; Ubuntu
+</p>
+
+<p>
+由于 UEFI 的限制无论如何修改启动顺序，TF 卡启动永远是第一位，这导致必须在 Ubuntu Installer 启动时 GRUB 选择无限等待，待人工确认后才可以进入下一步。
+</p>
+
+<p>
+由此总结，通用 Linux 系统启动的关键过程和原理如下。
+</p>
+</div>
+
+<div id="outline-container-org978bb2a" class="outline-3">
+<h3 id="org978bb2a"><span class="section-number-3">7.1.</span> 上电</h3>
+<div class="outline-text-3" id="text-7-1">
+<p>
+<a href="https://zhuanlan.zhihu.com/p/54734880">https://zhuanlan.zhihu.com/p/54734880</a>
+</p>
+
+<p>
+一台通用计算机的启动从按下电源开始，
+</p>
+
+<p>
+以台式机为例，主机插上交流电后，ATX 供电线的 +5VSB 就为开机电路、Wake-Up on Lan、USB 等模块供电。当按下电源按钮 PS<sub>ON</sub>#，电源模块收到通知开始为各模块供电，
+</p>
+
+<p>
+冯诺依曼计算机的处理器工作原理，取指令、指令译码、执行指令、访存取数、结果写回
+</p>
+
+<p>
+Intel 处理器从物理内存 0xFFFFFFF0 执行命令，
+</p>
+</div>
+</div>
+
+<div id="outline-container-org963bbab" class="outline-3">
+<h3 id="org963bbab"><span class="section-number-3">7.2.</span> UEFI</h3>
+<div class="outline-text-3" id="text-7-2">
+<p>
+Unified Extensible Firmware Interface (UEFI) 是操作系统和固件之间的接口，用于替代 BIOS，负责上电自检、联系操作系统以及提供连接操作系统与硬件的接口。
+</p>
+
+<p>
+power-on self-test (POST) 上电自检，检查各主要硬件和外围设备状况。如果一切顺利，将进入启动选择步骤（也就是执行 UEFI 应用，比如 GRUB 2，UEFI 会自动检测这些应用）。
+</p>
+</div>
+
+<div id="outline-container-org1a3f7d9" class="outline-4">
+<h4 id="org1a3f7d9"><span class="section-number-4">7.2.1.</span> BIOS</h4>
+<div class="outline-text-4" id="text-7-2-1">
+<p>
+Basic Input/Output System (BIOS)
+</p>
+
+<p>
+<a href="https://chyyuu.gitbooks.io/ucore_os_docs/content/lab1/lab1_3_1_bios_booting.html">https://chyyuu.gitbooks.io/ucore_os_docs/content/lab1/lab1_3_1_bios_booting.html</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org50db8fb" class="outline-4">
+<h4 id="org50db8fb"><span class="section-number-4">7.2.2.</span> GPT</h4>
+<div class="outline-text-4" id="text-7-2-2">
+<p>
+GUID Partition Table (GPT)
+</p>
+
+<p>
+GPT 指令，跳转
+</p>
+</div>
+</div>
+
+<div id="outline-container-org58f3b2d" class="outline-4">
+<h4 id="org58f3b2d"><span class="section-number-4">7.2.3.</span> 内存</h4>
+</div>
+
+<div id="outline-container-orgf962364" class="outline-4">
+<h4 id="orgf962364"><span class="section-number-4">7.2.4.</span> CPU 工作原理</h4>
+</div>
+
+<div id="outline-container-org705502d" class="outline-4">
+<h4 id="org705502d"><span class="section-number-4">7.2.5.</span> 硬盘</h4>
+<div class="outline-text-4" id="text-7-2-5">
+<p>
+硬盘基本结构
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6fcf41b" class="outline-4">
+<h4 id="org6fcf41b"><span class="section-number-4">7.2.6.</span> MBR</h4>
+<div class="outline-text-4" id="text-7-2-6">
+<p>
+Master Boot Record (MBR)
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf7822cb" class="outline-4">
+<h4 id="orgf7822cb"><span class="section-number-4">7.2.7.</span> 文件系统</h4>
+</div>
+</div>
+
+<div id="outline-container-org8251522" class="outline-3">
+<h3 id="org8251522"><span class="section-number-3">7.3.</span> GRUB 2</h3>
+</div>
+
+<div id="outline-container-org1164987" class="outline-3">
+<h3 id="org1164987"><span class="section-number-3">7.4.</span> Linux 内核</h3>
+<div class="outline-text-3" id="text-7-4">
+<p>
+内核镜像
+</p>
+
+<p>
+类型：
+</p>
+
+<p>
+文件系统镜像
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgd19b409" class="outline-3">
+<h3 id="orgd19b409"><span class="section-number-3">7.5.</span> Systemd</h3>
+<div class="outline-text-3" id="text-7-5">
+<p>
+内核启动后用户空间执行的第一个程序。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgef00cee" class="outline-3">
+<h3 id="orgef00cee"><span class="section-number-3">7.6.</span> Sysvinit</h3>
+<div class="outline-text-3" id="text-7-6">
+<p>
+Unix 时代的守护程序。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd5a68ca" class="outline-2">
+<h2 id="orgd5a68ca"><span class="section-number-2">8.</span> 结束</h2>
+<div class="outline-text-2" id="text-8">
+</div>
+<div id="outline-container-org1209f9f" class="outline-3">
+<h3 id="org1209f9f"><span class="section-number-3">8.1.</span> 拓展内容</h3>
+<div class="outline-text-3" id="text-8-1">
+</div>
+<div id="outline-container-org9a0dcf3" class="outline-4">
+<h4 id="org9a0dcf3"><span class="section-number-4">8.1.1.</span> Kickstart</h4>
+<div class="outline-text-4" id="text-8-1-1">
+<p>
+红帽系的自动安装程序
+</p>
+
+<p>
+<a href="https://www.ibm.com/docs/zh/linux-on-systems?topic=methods-kickstart-files-red-hat-enterprise-linux">https://www.ibm.com/docs/zh/linux-on-systems?topic=methods-kickstart-files-red-hat-enterprise-linux</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body>
+</html>
