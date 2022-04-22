@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<!-- 2022-04-23 Sat 07:54 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</title>
+<meta name="author" content="Felix M. Tang" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="./style.css" type="text/css">
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</h1>
+
+<div id="outline-container-orga302c47" class="outline-2">
+<h2 id="orga302c47"><span class="section-number-2">1.</span> 起因&#xa0;&#xa0;&#xa0;<span class="tag"><span class="test">test</span></span></h2>
+<div class="outline-text-2" id="text-1">
+</div>
+<div id="outline-container-org87ed7e3" class="outline-3">
+<h3 id="org87ed7e3"><span class="section-number-3">1.1.</span> 因为需要为没有网口的宁美魔方 mini 主机，开启 PXE 网络启动和 Ubuntu 系统自动安装工作流</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+以方便结合 Ubuntu 20.04 LTS Server 最新的 autoinstall 功能全自动批量安装系统。虽然该主机的 UEFI 有 PXE 网络启动选项，但因为苦于没有以太网接口，需要外接 USB 转以太网口转换器才可以连接网线。于是就有了一段漫长的踩坑旅程。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga587354" class="outline-3">
+<h3 id="orga587354"><span class="section-number-3">1.2.</span> 所以一路探索挖了包括 PXE 搭建、Linux 内核编译、ISO 镜像打包和 Linux 启动等多个坑</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+事后追溯，实现最终目标正确路径如下：
+</p>
+
+<ul class="org-ul">
+<li>使用 USB 转以太网口转换器连接网线，解决有线连接问题</li>
+<li>编译 iPXE 制作成镜像 U 盘启动，以解决默认 PXE 无 USB 转以 太网驱动问题</li>
+<li>搭建 PXE 服务，并改写 grub 配置问题，以实现自动安装</li>
+<li>往 Ubuntu 20.04 LTS Server 默认内核添加USB转以太网驱动，以实现 autoinstall 自动安装 Ubuntu 过程中可以连接有线网络</li>
+<li>最终结果，直接用一批修改过启动镜像的 TF 卡自动启动代替</li>
+</ul>
+
+<p>
+现将过程记录如下。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2e3a0a4" class="outline-2">
+<h2 id="org2e3a0a4"><span class="section-number-2">2.</span> USB 转以太网转换器</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+拿到的宁美魔方非常小巧，外部接口有两个 USB 3.0，一个用作电源接口的 USB-TypeC，一个 HDMI，一个 TF 卡槽和一个 3.5mm 耳机孔，没有提供 RJ-45 以太网接口。
+</p>
+
+<p>
+而 PXE 启动需要一个网络连接，首先就是有线网络连接。（无线网络事后来看通过 iPXE 理论上可以支持，没有过多尝试）
+</p>
+
+<p>
+首先尝试官宣支持 PXE 的 Dell Adapter - USB 3.0 to Ethernet PXE Boot 失败，原因可能是需要 DELL UEFI 的配合。
+</p>
+
+<p>
+然后准备某宝随机挑选了一款 USB 转以太网转换器，希望可以通过改造或替换添加过相关驱动的 UEFI 以达到目的，需要改造自然首选开源，选定的开源 UEFI 方案是 coreboot，经验证它不支持对手上的设备采取较简单的/在线烧录/方式，而复杂的方式则是需要拆机用烧录器实现，因此结论是 UEFI 替换过程及其复杂，不具有操作性。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2a587b7" class="outline-2">
+<h2 id="org2a587b7"><span class="section-number-2">3.</span> 编译 iPXE 启动镜像</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+除了动 UEFI 的心思，接下来的思路是将 PXE 动能单拎出来，先启动到一个第三方 PXE 上，通过这层跳板使用 PXE 服务。
+</p>
+
+<p>
+首先想到的是 Clonezilla，它有一个 iPXE 启动选项，通过 U 盘启动到 Clonezilla 镜像，选择 iPXE 启动，进而实现 PXE 服务。想法很美好，尝试之后结论是 Clonezilla 的 iPXE 没法驱动 USB转以太网转换器。
+</p>
+
+<p>
+转而直接研究 iPXE，通过其未被 Google 索引的论坛找到了为 USB 转以太网转换器特别准备的编译选项。参考 iPXE 官网文档，具体过程如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">git clone git://git.ipxe.org/ipxe.git
+<span style="color: #006FE0;">cd</span> ipxe/src
+make bin-x86_64-efi/ecm.usb
+sudo dd <span style="color: #BA36A5;">if</span>=bin-x86_64-efi/ecm.usb <span style="color: #BA36A5;">of</span>=/dev/sdc
+</pre>
+</div>
+
+<p>
+其中 <code>bin-x86_64-efi/ecm.usb</code> 三部分意义分别是平台、驱动、类型。
+</p>
+
+<p>
+这样，一个专门启动 iPXE 的跳板镜像就完成了。它使用 GPT 分区表（因为默认 UEFI 识别 GPT 分区表，这样就省去了 MBR 分区表需要进 UEFI 开启 CSM 兼容模式的麻烦）。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2393835" class="outline-2">
+<h2 id="org2393835"><span class="section-number-2">4.</span> 部署 PXE 服务</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+前面的步骤是为了给主机提供一个可以使用的 PXE 客户端，接下来的任务是创建一个 PXE 服务。PXE 服务需要 DHCP、TFTP 和一个外部文件服务（这里使用 HTTP ）。
+</p>
+</div>
+
+<div id="outline-container-org82be213" class="outline-3">
+<h3 id="org82be213"><span class="section-number-3">4.1.</span> HTTP 服务</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+托管 Linux 启动 ISO 镜像、autoinstall 需要的配置文件。简单用一个 Nginx 服务器完成。/var/www/html/ 目录下放 ubuntu-20.04.1-live-server-amd64.iso 文件；根据 autoinstall 要求建立一个 autoinstall 文件夹，里面建一个空 meta-data 文件，一个 user-data 文件，此文件内容如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-yaml"><span style="color: #BA36A5;">autoinstall</span>:
+  <span style="color: #0000FF;">apt</span>:
+    <span style="color: #BA36A5;">geoip</span>: <span style="color: #D0372D;">true</span>
+    <span style="color: #BA36A5;">preserve_sources_list</span>: <span style="color: #D0372D;">false</span>
+    <span style="color: #BA36A5;">primary</span>:
+    - <span style="color: #BA36A5;">arches</span>: [amd64, i386]
+      <span style="color: #0000FF;">uri</span>: https://mirrors.ustc.edu.cn/ubuntu
+    - <span style="color: #BA36A5;">arches</span>: [default]
+      <span style="color: #0000FF;">uri</span>: http://ports.ubuntu.com/ubuntu-ports
+  <span style="color: #BA36A5;">identity</span>: {
+    <span style="color: #0000FF;">hostname</span>: miner,
+    <span style="color: #BA36A5;">password</span>: $6$KnLqBbpGRQm0rcFt$GGIWrQPmdoIFHTA9QmotnNlJOeyiUU4ovjlxEZ3Z6G7r.gQepVGjVyX64zRFpkkZymFveBsCr2/FSs7DlDmXF1,
+    <span style="color: #BA36A5;">realname</span>: felix,
+    <span style="color: #BA36A5;">username</span>: felix
+  <span style="color: #BA36A5;">}</span>
+<span style="color: #BA36A5;">  keyboard</span>: {<span style="color: #BA36A5;">layout</span>: us, <span style="color: #BA36A5;">toggle</span>: null, <span style="color: #BA36A5;">variant</span>: <span style="color: #008000;">''</span>}
+  <span style="color: #BA36A5;">locale</span>: en_US.UTF-8
+  <span style="color: #BA36A5;">network</span>:
+    <span style="color: #BA36A5;">ethernets</span>:
+      <span style="color: #BA36A5;">enp1s0</span>: {<span style="color: #BA36A5;">dhcp4</span>: true}
+    <span style="color: #BA36A5;">version</span>: 2
+  <span style="color: #BA36A5;">ssh</span>:
+    <span style="color: #BA36A5;">allow-pw</span>: <span style="color: #D0372D;">true</span>
+    <span style="color: #BA36A5;">authorized-keys</span>: [<span style="color: #008000;">"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9FPt8Y3YWiyhcMOlbhCvZfhOxVUfSMu56Y+bOd5q5juSHhMbncWnd9BPybGV9Xkiz0m6JAfK3/iJkNX0QrAgM+bLHH2nW2aJlDeil3Uz4ZuZ4XYHzM77MqMZ/nmPPMVPpuBy0K58kWl8rrVB4X55kdLC4lGvn14gpoWlP6j81O7xmuVCBi2uCsUyZv3SwJbaXKHaEkX5Yy7m3Sxrvi46eqhk0inlovOly5T3vJ4QSOFr7dHsPw2oCtPXPAH5X+KJkHada3nRfVoI2G4qu5ALne4/C+H7IZ8F2APStZQn5swjfm2iTLS3WPYfuX7YGH3pc90VTLGh1G6mS09EiDg8rZ5lDiReQN8c6iNUfTTDSOgxf1MAPRITFlT2ct3jFr4AEu9VYTC87EIhSeeXoOo6jNGW/LDu4ckSjdKl8Fo3b4hzUO1OlkVKkTzUkt3Ad/UPc3vJs1s708+/60fgkh/Po58PcLvpfW8kzPrQOZ4l8/tjrJu6IYEnwYGMRL0K8pHc= felix"</span>]
+    <span style="color: #BA36A5;">install-server</span>: <span style="color: #D0372D;">true</span>
+  <span style="color: #BA36A5;">storage</span>:
+    <span style="color: #BA36A5;">grub</span>:
+      <span style="color: #BA36A5;">reorder_uefi</span>: <span style="color: #D0372D;">false</span>
+    <span style="color: #BA36A5;">config</span>:
+    - {<span style="color: #BA36A5;">ptable</span>: gpt, <span style="color: #BA36A5;">path</span>: /dev/sda, <span style="color: #BA36A5;">wipe</span>: superblock-recursive,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">name</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">grub_device</span>: false, <span style="color: #BA36A5;">type</span>: disk, <span style="color: #BA36A5;">id</span>: disk-sda}
+
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 268435456, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: boot, <span style="color: #BA36A5;">number</span>: 1,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">grub_device</span>: true, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-1}
+    - {<span style="color: #BA36A5;">fstype</span>: fat32, <span style="color: #BA36A5;">volume</span>: partition-1, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-1}
+
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 8589934592, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">number</span>: 2,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-2}
+    - {<span style="color: #BA36A5;">fstype</span>: ext4, <span style="color: #BA36A5;">volume</span>: partition-2, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-2}
+
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 119174856704, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">number</span>: 3,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-3}
+    - {<span style="color: #BA36A5;">fstype</span>: ext4, <span style="color: #BA36A5;">volume</span>: partition-3, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-3}
+
+    - {<span style="color: #BA36A5;">device</span>: format-1, <span style="color: #BA36A5;">path</span>: /boot/efi, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-1}
+    - {<span style="color: #BA36A5;">device</span>: format-2, <span style="color: #BA36A5;">path</span>: /, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-2}
+    - {<span style="color: #BA36A5;">device</span>: format-3, <span style="color: #BA36A5;">path</span>: /media, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-3}
+  <span style="color: #BA36A5;">packages</span>:
+  - net-tools
+  <span style="color: #BA36A5;">late-commands</span>:
+  - curtin in-target --target=/target -- apt update
+  - curtin in-target --target=/target -- apt upgrade -y
+  - curtin in-target --target=/target -- mkdir /media/pi/file -p
+  - curtin in-target --target=/target -- curl http://192.168.1.222/file.tar.gz --output file.tar.gz
+  - curtin in-target --target=/target -- tar -zxvf file.tar.gz
+  - curtin in-target --target=/target -- mv file /media/pi/
+  - curtin in-target --target=/target -- curl http://192.168.1.222/file2.tar.gz --output file2.tar.gz
+  - curtin in-target --target=/target -- tar -zxvf file2.tar.gz
+  - curtin in-target -- echo <span style="color: #008000;">"*/1 * * * * /home/felix/file2/startup.sh"</span> &gt;&gt; /var/spool/cron/crontabs/root
+  <span style="color: #BA36A5;">version</span>: 1
+</pre>
+</div>
+
+<p>
+文件定义了 apt 源、主机名、用户名、密码、键盘、网络、分区方案，额外软件包，额外执行命令等信息，之后安装内核启动时会根据参数下载这个文件并完成自动安装。
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgaf5f044" class="outline-3">
+<h3 id="orgaf5f044"><span class="section-number-3">4.2.</span> 带额外字段的 DHCP 服务，TFTP 服务</h3>
+<div class="outline-text-3" id="text-4-2">
+<p>
+DHCP 和 TFTP 是分开的两个服务，这里选用 dnsmasq 一个小型 DNS 服务附带 DHCP 和 TFTP 功能，可完美解决这里的需求。
+</p>
+
+<p>
+dnsmasq 默认两个配置文件 /etc/dnsmasq.conf 内容如下：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">felix@master:~$ grep <span style="color: #008000;">'^[^#]'</span>  /etc/dnsmasq.conf
+<span style="color: #BA36A5;">port</span>=53 <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dns&#26381;&#21153;&#31471;&#21475;</span>
+domain-needed
+dhcp-option=option:router,192.168.33.222        <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dhcp&#26381;&#21153;&#22120;</span>
+enable-tftp     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#24320;&#21551;tftp&#26381;&#21153;</span>
+tftp-root=/var/ftpd     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#37197;&#32622;tftp&#20869;&#23481;&#20301;&#32622;</span>
+log-dhcp
+dhcp-range=192.168.33.100,192.168.33.199,2h     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dhcp&#20998;&#37197;&#22320;&#22336;&#33539;&#22260;</span>
+dhcp-boot=grubnetx64.efi        <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">pxe&#32593;&#32476;&#21551;&#21160;&#30340;efi&#21551;&#21160;&#25991;&#20214;</span>
+dhcp-host=84:39:be:9c:0b:f3,192.168.33.222      <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#32465;&#23450;&#26576;&#26381;&#21153;&#22120;ip&#22320;&#22336;</span>
+</pre>
+</div>
+<p>
+解决 dnsmasq 和 systemd-resolved.service 的冲突问题，简单关闭掉 systemd-resolved.service？忘了。
+</p>
+
+<p>
+现在看 /var/ftpd 中文件，这是 PXE 客户端读取并执行的文件，
+</p>
+
+<pre class="example">
+felix@master:/var/ftpd$ ls
+casper  grub  grubnetx64.efi  ldlinux.c32  pxelinux.0  pxelinux.cfg
+</pre>
+
+<p>
+grubnetx64.efi 是要执行的 efi程序，配套 grub 文件夹中的配置文件 =/var/ftpd/grub/grub.cfg=，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #0000FF;">if</span> loadfont /boot/grub/font.pf2 ; <span style="color: #0000FF;">then</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxmode</span>=auto
+    insmod efi_gop
+    insmod efi_uga
+    insmod gfxterm
+    terminal_output gfxterm
+<span style="color: #0000FF;">fi</span>
+
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">menu_color_normal</span>=white/black
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">menu_color_highlight</span>=black/light-gray
+
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">timeout</span>=5
+menuentry <span style="color: #008000;">"Install Ubuntu Server"</span> <span style="color: #707183;">{</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+    initrd      /casper/initrd
+<span style="color: #707183;">}</span>
+menuentry <span style="color: #008000;">"Install Ubuntu Server (safe graphics)"</span> <span style="color: #707183;">{</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  nomodeset <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.1-live-server-amd64.iso ---
+    initrd      /casper/initrd
+<span style="color: #707183;">}</span>
+grub_platform
+<span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> <span style="color: #008000;">"$grub_platform"</span> = <span style="color: #008000;">"efi"</span> <span style="color: #707183;">]</span>; <span style="color: #0000FF;">then</span>
+    menuentry <span style="color: #008000;">'Boot from next volume'</span> <span style="color: #707183;">{</span>
+        <span style="color: #0000FF;">exit</span>
+    <span style="color: #707183;">}</span>
+    menuentry <span style="color: #008000;">'UEFI Firmware Settings'</span> <span style="color: #707183;">{</span>
+        fwsetup
+    <span style="color: #707183;">}</span>
+<span style="color: #0000FF;">fi</span>
+</pre>
+</div>
+
+<p>
+其中，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">linux   /casper/vmlinuz   quiet  <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+initrd  /casper/initrd
+</pre>
+</div>
+
+<p>
+指导 tftp 下的内核启动 192.168.33.222 的 HTTP 服务中的 .iso 镜像，Initial ramdisk 指定为 tftp 服务下的 /casper/initrd，至此 PXE 服务畅通。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc9e505d" class="outline-2">
+<h2 id="orgc9e505d"><span class="section-number-2">5.</span> 编译 Ubuntu 内核，并打包 iso 启动镜像</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+接下来的方向应该是读取到 .iso 文件，开启一段愉快的网络安装体验，前提是上一步的 <code>/casper/vmlinuz</code> 有 USB 转以太网驱动的话。很遗憾，没有。从 Ubuntu Server 安装镜像提取到的 <code>/casper/vmlinuz</code> 不带此驱动，从对应桌面版 Ubuntu 安装镜像提取到的虽然有此驱动，但是无法使用 autoinstall 功能。
+</p>
+
+<p>
+接下来的工作只需要为 /casper/vmlinuz 编译一个带 USB 转以太网驱动的内核以替代前者，参考这里， 修复 _apt 权限问题，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">sudo chown -Rv _apt:root /var/cache/apt/archives/partial/
+sudo chmod -Rv 700 /var/cache/apt/archives/partial/
+</pre>
+</div>
+
+<p>
+使用 apt 下载 Linux 内核代码当前目录，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">sudo apt source linux-source-5.4.0
+</pre>
+</div>
+
+<p>
+编译作业待验证
+</p>
+
+<p>
+下一步是改造官方的 .iso 镜像，以为安装内核植入 autoinstall 参数，以实现全自动安装过程。基本思路是首先拆解 .iso 镜像，编辑对应文件，更新 md5 文件，打包回 .iso 自定义镜像。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org59484f3" class="outline-2">
+<h2 id="org59484f3"><span class="section-number-2">6.</span> 最终，使用修改过的 Ubuntu 启动镜像 TF 卡插卡直接启动</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+实际中放弃了全自动安装过程，转而直接改造 .iso 镜像的启动参数，注入 auto install 自动启动，然后把这个镜像烧录进 TF 卡不也可以实现半自动化的安装吗！这时候发现一个可以无脑定制 Ubuntu 镜像的工具 Cubic，其讲 Ubuntu 镜像的结构直观得展示在出来，并可以随意改造。
+</p>
+
+<p>
+很自然，用 Cubic 直接改造镜像加入自动安装机制。不同的是放弃 PXE 启动，转而找了一批 TF 卡，用改造后的启动镜像，实现半自动安装。
+</p>
+
+<p>
+改造的地方包括在根目录放入一个 <code>autoinstall</code> 文件夹，参考 0.5.1 的内容；修改 /boot/grub/grub.cfg 的内核启动参数为，
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell">linux /casper/vmliuz <span style="color: #BA36A5;">boot</span>=casper quiet autoinstall <span style="color: #008000;">"ds=noclouds;s=/cdrom/autoinstall/"</span> ---
+initrd /casper/initrd.lz
+</pre>
+</div>
+
+<p>
+casper 参数意为启动 live system，这里 autoinstall 用了 cloud-init 中的 noclouds。事实上 cloud-init 已经是云服务中系统初始化的标准，其他 Linux 发行版私以为也有类似形式的功能。
+</p>
+</div>
+</div>
+</div>
+</body>
+</html>
