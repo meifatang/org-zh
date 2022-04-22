@@ -1,10 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<!-- 2022-04-22 Fri 23:39 -->
-<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<!-- 2022-04-23 Sat 06:51 -->
+<meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</title>
 <meta name="author" content="Felix M. Tang" />
@@ -272,9 +270,9 @@
 
 <div class="org-src-container">
 <pre class="src src-shell">git clone git://git.ipxe.org/ipxe.git
-<span style="color: #ff9029;">cd</span> ipxe/src
+<span style="color: #006FE0;">cd</span> ipxe/src
 make bin-x86_64-efi/ecm.usb
-sudo dd <span style="color: #4ac964;">if</span>=bin-x86_64-efi/ecm.usb <span style="color: #4ac964;">of</span>=/dev/sdc
+sudo dd <span style="color: #BA36A5;">if</span>=bin-x86_64-efi/ecm.usb <span style="color: #BA36A5;">of</span>=/dev/sdc
 </pre>
 </div>
 
@@ -304,56 +302,56 @@ sudo dd <span style="color: #4ac964;">if</span>=bin-x86_64-efi/ecm.usb <span sty
 </p>
 
 <div class="org-src-container">
-<pre class="src src-yaml"><span style="color: #4ac964;">autoinstall</span>:
-  <span style="color: #ffff0b;">apt</span>:
-    <span style="color: #4ac964;">geoip</span>: <span style="color: #34c8d8;">true</span>
-    <span style="color: #4ac964;">preserve_sources_list</span>: <span style="color: #34c8d8;">false</span>
-    <span style="color: #4ac964;">primary</span>:
-    - <span style="color: #4ac964;">arches</span>: [amd64, i386]
-      <span style="color: #ffff0b;">uri</span>: https://mirrors.ustc.edu.cn/ubuntu
-    - <span style="color: #4ac964;">arches</span>: [default]
-      <span style="color: #ffff0b;">uri</span>: http://ports.ubuntu.com/ubuntu-ports
-  <span style="color: #4ac964;">identity</span>: {
-    <span style="color: #ffff0b;">hostname</span>: miner,
-    <span style="color: #4ac964;">password</span>: $6$KnLqBbpGRQm0rcFt$GGIWrQPmdoIFHTA9QmotnNlJOeyiUU4ovjlxEZ3Z6G7r.gQepVGjVyX64zRFpkkZymFveBsCr2/FSs7DlDmXF1,
-    <span style="color: #4ac964;">realname</span>: felix,
-    <span style="color: #4ac964;">username</span>: felix
-  <span style="color: #4ac964;">}</span>
-<span style="color: #4ac964;">  keyboard</span>: {<span style="color: #4ac964;">layout</span>: us, <span style="color: #4ac964;">toggle</span>: null, <span style="color: #4ac964;">variant</span>: <span style="color: #ff7fff;">''</span>}
-  <span style="color: #4ac964;">locale</span>: en_US.UTF-8
-  <span style="color: #4ac964;">network</span>:
-    <span style="color: #4ac964;">ethernets</span>:
-      <span style="color: #4ac964;">enp1s0</span>: {<span style="color: #4ac964;">dhcp4</span>: true}
-    <span style="color: #4ac964;">version</span>: 2
-  <span style="color: #4ac964;">ssh</span>:
-    <span style="color: #4ac964;">allow-pw</span>: <span style="color: #34c8d8;">true</span>
-    <span style="color: #4ac964;">authorized-keys</span>: [<span style="color: #ff7fff;">"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9FPt8Y3YWiyhcMOlbhCvZfhOxVUfSMu56Y+bOd5q5juSHhMbncWnd9BPybGV9Xkiz0m6JAfK3/iJkNX0QrAgM+bLHH2nW2aJlDeil3Uz4ZuZ4XYHzM77MqMZ/nmPPMVPpuBy0K58kWl8rrVB4X55kdLC4lGvn14gpoWlP6j81O7xmuVCBi2uCsUyZv3SwJbaXKHaEkX5Yy7m3Sxrvi46eqhk0inlovOly5T3vJ4QSOFr7dHsPw2oCtPXPAH5X+KJkHada3nRfVoI2G4qu5ALne4/C+H7IZ8F2APStZQn5swjfm2iTLS3WPYfuX7YGH3pc90VTLGh1G6mS09EiDg8rZ5lDiReQN8c6iNUfTTDSOgxf1MAPRITFlT2ct3jFr4AEu9VYTC87EIhSeeXoOo6jNGW/LDu4ckSjdKl8Fo3b4hzUO1OlkVKkTzUkt3Ad/UPc3vJs1s708+/60fgkh/Po58PcLvpfW8kzPrQOZ4l8/tjrJu6IYEnwYGMRL0K8pHc= felix"</span>]
-    <span style="color: #4ac964;">install-server</span>: <span style="color: #34c8d8;">true</span>
-  <span style="color: #4ac964;">storage</span>:
-    <span style="color: #4ac964;">grub</span>:
-      <span style="color: #4ac964;">reorder_uefi</span>: <span style="color: #34c8d8;">false</span>
-    <span style="color: #4ac964;">config</span>:
-    - {<span style="color: #4ac964;">ptable</span>: gpt, <span style="color: #4ac964;">path</span>: /dev/sda, <span style="color: #4ac964;">wipe</span>: superblock-recursive,
-       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">name</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">grub_device</span>: false, <span style="color: #4ac964;">type</span>: disk, <span style="color: #4ac964;">id</span>: disk-sda}
+<pre class="src src-yaml"><span style="color: #BA36A5;">autoinstall</span>:
+  <span style="color: #0000FF;">apt</span>:
+    <span style="color: #BA36A5;">geoip</span>: <span style="color: #D0372D;">true</span>
+    <span style="color: #BA36A5;">preserve_sources_list</span>: <span style="color: #D0372D;">false</span>
+    <span style="color: #BA36A5;">primary</span>:
+    - <span style="color: #BA36A5;">arches</span>: [amd64, i386]
+      <span style="color: #0000FF;">uri</span>: https://mirrors.ustc.edu.cn/ubuntu
+    - <span style="color: #BA36A5;">arches</span>: [default]
+      <span style="color: #0000FF;">uri</span>: http://ports.ubuntu.com/ubuntu-ports
+  <span style="color: #BA36A5;">identity</span>: {
+    <span style="color: #0000FF;">hostname</span>: miner,
+    <span style="color: #BA36A5;">password</span>: $6$KnLqBbpGRQm0rcFt$GGIWrQPmdoIFHTA9QmotnNlJOeyiUU4ovjlxEZ3Z6G7r.gQepVGjVyX64zRFpkkZymFveBsCr2/FSs7DlDmXF1,
+    <span style="color: #BA36A5;">realname</span>: felix,
+    <span style="color: #BA36A5;">username</span>: felix
+  <span style="color: #BA36A5;">}</span>
+<span style="color: #BA36A5;">  keyboard</span>: {<span style="color: #BA36A5;">layout</span>: us, <span style="color: #BA36A5;">toggle</span>: null, <span style="color: #BA36A5;">variant</span>: <span style="color: #008000;">''</span>}
+  <span style="color: #BA36A5;">locale</span>: en_US.UTF-8
+  <span style="color: #BA36A5;">network</span>:
+    <span style="color: #BA36A5;">ethernets</span>:
+      <span style="color: #BA36A5;">enp1s0</span>: {<span style="color: #BA36A5;">dhcp4</span>: true}
+    <span style="color: #BA36A5;">version</span>: 2
+  <span style="color: #BA36A5;">ssh</span>:
+    <span style="color: #BA36A5;">allow-pw</span>: <span style="color: #D0372D;">true</span>
+    <span style="color: #BA36A5;">authorized-keys</span>: [<span style="color: #008000;">"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC9FPt8Y3YWiyhcMOlbhCvZfhOxVUfSMu56Y+bOd5q5juSHhMbncWnd9BPybGV9Xkiz0m6JAfK3/iJkNX0QrAgM+bLHH2nW2aJlDeil3Uz4ZuZ4XYHzM77MqMZ/nmPPMVPpuBy0K58kWl8rrVB4X55kdLC4lGvn14gpoWlP6j81O7xmuVCBi2uCsUyZv3SwJbaXKHaEkX5Yy7m3Sxrvi46eqhk0inlovOly5T3vJ4QSOFr7dHsPw2oCtPXPAH5X+KJkHada3nRfVoI2G4qu5ALne4/C+H7IZ8F2APStZQn5swjfm2iTLS3WPYfuX7YGH3pc90VTLGh1G6mS09EiDg8rZ5lDiReQN8c6iNUfTTDSOgxf1MAPRITFlT2ct3jFr4AEu9VYTC87EIhSeeXoOo6jNGW/LDu4ckSjdKl8Fo3b4hzUO1OlkVKkTzUkt3Ad/UPc3vJs1s708+/60fgkh/Po58PcLvpfW8kzPrQOZ4l8/tjrJu6IYEnwYGMRL0K8pHc= felix"</span>]
+    <span style="color: #BA36A5;">install-server</span>: <span style="color: #D0372D;">true</span>
+  <span style="color: #BA36A5;">storage</span>:
+    <span style="color: #BA36A5;">grub</span>:
+      <span style="color: #BA36A5;">reorder_uefi</span>: <span style="color: #D0372D;">false</span>
+    <span style="color: #BA36A5;">config</span>:
+    - {<span style="color: #BA36A5;">ptable</span>: gpt, <span style="color: #BA36A5;">path</span>: /dev/sda, <span style="color: #BA36A5;">wipe</span>: superblock-recursive,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">name</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">grub_device</span>: false, <span style="color: #BA36A5;">type</span>: disk, <span style="color: #BA36A5;">id</span>: disk-sda}
 
-    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 268435456, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: boot, <span style="color: #4ac964;">number</span>: 1,
-       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">grub_device</span>: true, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-1}
-    - {<span style="color: #4ac964;">fstype</span>: fat32, <span style="color: #4ac964;">volume</span>: partition-1, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-1}
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 268435456, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: boot, <span style="color: #BA36A5;">number</span>: 1,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">grub_device</span>: true, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-1}
+    - {<span style="color: #BA36A5;">fstype</span>: fat32, <span style="color: #BA36A5;">volume</span>: partition-1, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-1}
 
-    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 8589934592, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">number</span>: 2,
-       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-2}
-    - {<span style="color: #4ac964;">fstype</span>: ext4, <span style="color: #4ac964;">volume</span>: partition-2, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-2}
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 8589934592, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">number</span>: 2,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-2}
+    - {<span style="color: #BA36A5;">fstype</span>: ext4, <span style="color: #BA36A5;">volume</span>: partition-2, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-2}
 
-    - {<span style="color: #4ac964;">device</span>: disk-sda, <span style="color: #4ac964;">size</span>: 119174856704, <span style="color: #4ac964;">wipe</span>: superblock, <span style="color: #4ac964;">flag</span>: <span style="color: #ff7fff;">''</span>, <span style="color: #4ac964;">number</span>: 3,
-       <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: partition, <span style="color: #4ac964;">id</span>: partition-3}
-    - {<span style="color: #4ac964;">fstype</span>: ext4, <span style="color: #4ac964;">volume</span>: partition-3, <span style="color: #4ac964;">preserve</span>: false, <span style="color: #4ac964;">type</span>: format, <span style="color: #4ac964;">id</span>: format-3}
+    - {<span style="color: #BA36A5;">device</span>: disk-sda, <span style="color: #BA36A5;">size</span>: 119174856704, <span style="color: #BA36A5;">wipe</span>: superblock, <span style="color: #BA36A5;">flag</span>: <span style="color: #008000;">''</span>, <span style="color: #BA36A5;">number</span>: 3,
+       <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: partition, <span style="color: #BA36A5;">id</span>: partition-3}
+    - {<span style="color: #BA36A5;">fstype</span>: ext4, <span style="color: #BA36A5;">volume</span>: partition-3, <span style="color: #BA36A5;">preserve</span>: false, <span style="color: #BA36A5;">type</span>: format, <span style="color: #BA36A5;">id</span>: format-3}
 
-    - {<span style="color: #4ac964;">device</span>: format-1, <span style="color: #4ac964;">path</span>: /boot/efi, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-1}
-    - {<span style="color: #4ac964;">device</span>: format-2, <span style="color: #4ac964;">path</span>: /, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-2}
-    - {<span style="color: #4ac964;">device</span>: format-3, <span style="color: #4ac964;">path</span>: /media, <span style="color: #4ac964;">type</span>: mount, <span style="color: #4ac964;">id</span>: mount-3}
-  <span style="color: #4ac964;">packages</span>:
+    - {<span style="color: #BA36A5;">device</span>: format-1, <span style="color: #BA36A5;">path</span>: /boot/efi, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-1}
+    - {<span style="color: #BA36A5;">device</span>: format-2, <span style="color: #BA36A5;">path</span>: /, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-2}
+    - {<span style="color: #BA36A5;">device</span>: format-3, <span style="color: #BA36A5;">path</span>: /media, <span style="color: #BA36A5;">type</span>: mount, <span style="color: #BA36A5;">id</span>: mount-3}
+  <span style="color: #BA36A5;">packages</span>:
   - net-tools
-  <span style="color: #4ac964;">late-commands</span>:
+  <span style="color: #BA36A5;">late-commands</span>:
   - curtin in-target --target=/target -- apt update
   - curtin in-target --target=/target -- apt upgrade -y
   - curtin in-target --target=/target -- mkdir /media/pi/file -p
@@ -362,8 +360,8 @@ sudo dd <span style="color: #4ac964;">if</span>=bin-x86_64-efi/ecm.usb <span sty
   - curtin in-target --target=/target -- mv file /media/pi/
   - curtin in-target --target=/target -- curl http://192.168.1.222/file2.tar.gz --output file2.tar.gz
   - curtin in-target --target=/target -- tar -zxvf file2.tar.gz
-  - curtin in-target -- echo <span style="color: #ff7fff;">"*/1 * * * * /home/felix/file2/startup.sh"</span> &gt;&gt; /var/spool/cron/crontabs/root
-  <span style="color: #4ac964;">version</span>: 1
+  - curtin in-target -- echo <span style="color: #008000;">"*/1 * * * * /home/felix/file2/startup.sh"</span> &gt;&gt; /var/spool/cron/crontabs/root
+  <span style="color: #BA36A5;">version</span>: 1
 </pre>
 </div>
 
@@ -385,16 +383,16 @@ dnsmasq 默认两个配置文件 /etc/dnsmasq.conf 内容如下：
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">felix@master:~$ grep <span style="color: #ff7fff;">'^[^#]'</span>  /etc/dnsmasq.conf
-<span style="color: #4ac964;">port</span>=53 <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dns&#26381;&#21153;&#31471;&#21475;</span>
+<pre class="src src-shell">felix@master:~$ grep <span style="color: #008000;">'^[^#]'</span>  /etc/dnsmasq.conf
+<span style="color: #BA36A5;">port</span>=53 <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dns&#26381;&#21153;&#31471;&#21475;</span>
 domain-needed
-dhcp-option=option:router,192.168.33.222        <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dhcp&#26381;&#21153;&#22120;</span>
-enable-tftp     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#24320;&#21551;tftp&#26381;&#21153;</span>
-tftp-root=/var/ftpd     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#37197;&#32622;tftp&#20869;&#23481;&#20301;&#32622;</span>
+dhcp-option=option:router,192.168.33.222        <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dhcp&#26381;&#21153;&#22120;</span>
+enable-tftp     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#24320;&#21551;tftp&#26381;&#21153;</span>
+tftp-root=/var/ftpd     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#37197;&#32622;tftp&#20869;&#23481;&#20301;&#32622;</span>
 log-dhcp
-dhcp-range=192.168.33.100,192.168.33.199,2h     <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">dhcp&#20998;&#37197;&#22320;&#22336;&#33539;&#22260;</span>
-dhcp-boot=grubnetx64.efi        <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">pxe&#32593;&#32476;&#21551;&#21160;&#30340;efi&#21551;&#21160;&#25991;&#20214;</span>
-dhcp-host=84:39:be:9c:0b:f3,192.168.33.222      <span style="color: #767283;"># </span><span style="color: #767283; font-style: italic;">&#32465;&#23450;&#26576;&#26381;&#21153;&#22120;ip&#22320;&#22336;</span>
+dhcp-range=192.168.33.100,192.168.33.199,2h     <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">dhcp&#20998;&#37197;&#22320;&#22336;&#33539;&#22260;</span>
+dhcp-boot=grubnetx64.efi        <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">pxe&#32593;&#32476;&#21551;&#21160;&#30340;efi&#21551;&#21160;&#25991;&#20214;</span>
+dhcp-host=84:39:be:9c:0b:f3,192.168.33.222      <span style="color: #8D8D84;"># </span><span style="color: #8D8D84; font-style: italic;">&#32465;&#23450;&#26576;&#26381;&#21153;&#22120;ip&#22320;&#22336;</span>
 </pre>
 </div>
 <p>
@@ -415,37 +413,37 @@ grubnetx64.efi 是要执行的 efi程序，配套 grub 文件夹中的配置文�
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell"><span style="color: #ffff0b;">if</span> loadfont /boot/grub/font.pf2 ; <span style="color: #ffff0b;">then</span>
-    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxmode</span>=auto
+<pre class="src src-shell"><span style="color: #0000FF;">if</span> loadfont /boot/grub/font.pf2 ; <span style="color: #0000FF;">then</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxmode</span>=auto
     insmod efi_gop
     insmod efi_uga
     insmod gfxterm
     terminal_output gfxterm
-<span style="color: #ffff0b;">fi</span>
+<span style="color: #0000FF;">fi</span>
 
-<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">menu_color_normal</span>=white/black
-<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">menu_color_highlight</span>=black/light-gray
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">menu_color_normal</span>=white/black
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">menu_color_highlight</span>=black/light-gray
 
-<span style="color: #ff9029;">set</span> <span style="color: #4ac964;">timeout</span>=5
-menuentry <span style="color: #ff7fff;">"Install Ubuntu Server"</span> <span style="color: #938e84;">{</span>
-    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxpayload</span>=keep
-    linux       /casper/vmlinuz   quiet  <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+<span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">timeout</span>=5
+menuentry <span style="color: #008000;">"Install Ubuntu Server"</span> <span style="color: #707183;">{</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
     initrd      /casper/initrd
-<span style="color: #938e84;">}</span>
-menuentry <span style="color: #ff7fff;">"Install Ubuntu Server (safe graphics)"</span> <span style="color: #938e84;">{</span>
-    <span style="color: #ff9029;">set</span> <span style="color: #4ac964;">gfxpayload</span>=keep
-    linux       /casper/vmlinuz   quiet  nomodeset <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.1-live-server-amd64.iso ---
+<span style="color: #707183;">}</span>
+menuentry <span style="color: #008000;">"Install Ubuntu Server (safe graphics)"</span> <span style="color: #707183;">{</span>
+    <span style="color: #006FE0;">set</span> <span style="color: #BA36A5;">gfxpayload</span>=keep
+    linux       /casper/vmlinuz   quiet  nomodeset <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=https://mirrors.tuna.tsinghua.edu.cn/ubuntu-releases/focal/ubuntu-20.04.1-live-server-amd64.iso ---
     initrd      /casper/initrd
-<span style="color: #938e84;">}</span>
+<span style="color: #707183;">}</span>
 grub_platform
-<span style="color: #ffff0b;">if</span> <span style="color: #938e84;">[</span> <span style="color: #ff7fff;">"$grub_platform"</span> = <span style="color: #ff7fff;">"efi"</span> <span style="color: #938e84;">]</span>; <span style="color: #ffff0b;">then</span>
-    menuentry <span style="color: #ff7fff;">'Boot from next volume'</span> <span style="color: #938e84;">{</span>
-        <span style="color: #ffff0b;">exit</span>
-    <span style="color: #938e84;">}</span>
-    menuentry <span style="color: #ff7fff;">'UEFI Firmware Settings'</span> <span style="color: #938e84;">{</span>
+<span style="color: #0000FF;">if</span> <span style="color: #707183;">[</span> <span style="color: #008000;">"$grub_platform"</span> = <span style="color: #008000;">"efi"</span> <span style="color: #707183;">]</span>; <span style="color: #0000FF;">then</span>
+    menuentry <span style="color: #008000;">'Boot from next volume'</span> <span style="color: #707183;">{</span>
+        <span style="color: #0000FF;">exit</span>
+    <span style="color: #707183;">}</span>
+    menuentry <span style="color: #008000;">'UEFI Firmware Settings'</span> <span style="color: #707183;">{</span>
         fwsetup
-    <span style="color: #938e84;">}</span>
-<span style="color: #ffff0b;">fi</span>
+    <span style="color: #707183;">}</span>
+<span style="color: #0000FF;">fi</span>
 </pre>
 </div>
 
@@ -454,7 +452,7 @@ grub_platform
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">linux   /casper/vmlinuz   quiet  <span style="color: #4ac964;">root</span>=/dev/ram0 <span style="color: #4ac964;">ramdisk_size</span>=1500000 <span style="color: #4ac964;">ip</span>=dhcp <span style="color: #4ac964;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
+<pre class="src src-shell">linux   /casper/vmlinuz   quiet  <span style="color: #BA36A5;">root</span>=/dev/ram0 <span style="color: #BA36A5;">ramdisk_size</span>=1500000 <span style="color: #BA36A5;">ip</span>=dhcp <span style="color: #BA36A5;">url</span>=http://192.168.33.222/ubuntu-20.04.1-live-server-amd64.iso ---
 initrd  /casper/initrd
 </pre>
 </div>
@@ -518,7 +516,7 @@ sudo chmod -Rv 700 /var/cache/apt/archives/partial/
 </p>
 
 <div class="org-src-container">
-<pre class="src src-shell">linux /casper/vmliuz <span style="color: #4ac964;">boot</span>=casper quiet autoinstall <span style="color: #ff7fff;">"ds=noclouds;s=/cdrom/autoinstall/"</span> ---
+<pre class="src src-shell">linux /casper/vmliuz <span style="color: #BA36A5;">boot</span>=casper quiet autoinstall <span style="color: #008000;">"ds=noclouds;s=/cdrom/autoinstall/"</span> ---
 initrd /casper/initrd.lz
 </pre>
 </div>
