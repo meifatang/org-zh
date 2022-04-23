@@ -1,3 +1,4 @@
 #+title: 404
+#+description: 404 页面
 
-Go back to [[file:index.org][index page]].
+Go back to [[file:index.org][home page]].
