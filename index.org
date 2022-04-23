@@ -1,7 +1,9 @@
 #+title: 汤美法
+#+options: num:nil
 
 #+begin_center
 [[file:theindex.org][Articles]]
+[[file:about.org][About]]
 #+end_center
 
 * 待办

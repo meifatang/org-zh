@@ -1,7 +1,9 @@
-#+TITLE: 
+#+TITLE: 汤美法
 
+- [[file:about.org][About me]]
 - [[file:GNU Guix.org][GNU Guix：强迫症的操作系统]]
 - [[file:Gitlb.org][Gitlab：自己部署一个私有代码托管平台]]
+- [[file:theindex.org][Index]]
 - [[file:Jenkins.org][Jenkins]]
 - [[file:K3s.org][K3s：面向 IoT，边缘计算的精简版 K8s]]
 - [[file:Linux 是如何工作的：Linux 启动过程.org][Linux 是如何工作的：Linux 启动过程]]
@@ -16,6 +18,7 @@
 - [[file:Wireguard.org][Wireguard]]
 - [[file:健康码扫码？多此一举.org][健康码扫码？多此一举]]
 - [[file:文学运维 Literate DevOps：像写文章一样执行运维任务.org][文学运维 Literate DevOps：像写文章一样执行运维任务]]
+- [[file:index.org][汤美法]]
 - [[file:由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理.org][由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理]]
 - [[file:知识管理系统 Knowledge management：信息不整理都是楼下垃圾堆.org][知识管理系统 Knowledge management：信息不整理都是楼下垃圾堆]]
 - [[file:私有云 Private Cloud：整理身边的旧手机、电脑、树莓派，抽象计算、存储资源，穷人版私有云永不为奴.org][私有云 Private Cloud：整理身边的旧手机、电脑、树莓派，抽象计算、存储资源，穷人版私有云永不为奴]]
