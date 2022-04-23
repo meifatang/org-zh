@@ -2,11 +2,6 @@
 #+description: 汤美法的博客
 #+options: num:nil
 
-#+begin_center
-[[file:theindex.org][Articles]]
-[[file:about.org][About]]
-#+end_center
-
 * 待办
 ** TODO 网站
 *** TODO 优化 css 布局
