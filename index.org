@@ -1,3 +1,16 @@
 #+title: 汤美法
 
 [[file:theindex.org][Articles]]
+
+* 待办
+** TODO 网站
+*** TODO 优化 css 布局
+*** TODO 添加响应式布局
+*** TODO 添加 footer
+- [ ] RSS
+*** TODO 添加 header
+**** TODO 添加导航菜单
+- [ ] Articles
+- [ ] About
+*** TODO 添加 toc 到左边，（在宽屏环境下）
+*** TODO 添加 AMP 支持

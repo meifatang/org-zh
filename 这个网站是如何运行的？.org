@@ -1,0 +1,18 @@
+#+title: 这个网站是如何运行的？
+
+* 内容
+Org mode
+
+* 添加 css
+https://tangmeifa.com/style.css
+
+* TODO 添加 JavaScript
+也许永远不做，保持静态
+
+* 生成 html
+Org publish
+
+* Push 到 github
+
+
+* Cloudflare Pages 托管
