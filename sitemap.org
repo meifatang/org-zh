@@ -1,5 +1,6 @@
 #+TITLE: 
 
+- [[file:404.org][404]]
 - [[file:about.org][About me]]
 - [[file:GNU Guix.org][GNU Guix：强迫症的操作系统]]
 - [[file:Gitlb.org][Gitlab：自己部署一个私有代码托管平台]]
