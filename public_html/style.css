@@ -219,3 +219,7 @@ footer {
 a {
     text-decoration: auto;
 }
+
+#rss {
+    float: right;
+}
