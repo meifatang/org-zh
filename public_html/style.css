@@ -4,13 +4,13 @@ body {
     margin: auto;
 }
 
+#rss {
+    float: right;
+}
+
 footer {
     font-size: small;
     color: grey;
-}
-
-#rss {
-    float: right;
 }
 
 pre {
