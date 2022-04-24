@@ -220,6 +220,11 @@ a {
     text-decoration: none;
 }
 
+ul {
+    padding-inline-start: 1.5em;
+    list-style-type: "- ";
+}
+
 #rss {
     float: right;
 }
