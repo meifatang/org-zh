@@ -2,4 +2,4 @@
 
 #+INCLUDE: "theindex.inc"
 
-#+include: "sitemap.org"
+#+include: "sitemap.org" :lines "3-"
