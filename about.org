@@ -1,4 +1,4 @@
-#+title: About me
+#+title: 关于
 
 * 哲学
 ** 思维

@@ -205,7 +205,3 @@ textarea { overflow-x: auto; }
 { background-color: #ffff00; color: #000000; font-weight: bold; }
 
 .org-svg { }
-
-ul {
-    list-style-type: "- ";
-}
