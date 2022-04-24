@@ -1,5 +1,5 @@
 body {
-    max-width: 60em;
+    max-width: 50em;
     padding: 1em;
     margin: auto;
     font-family: Menlo, Monaco, monospace;
@@ -210,3 +210,12 @@ textarea { overflow-x: auto; }
 { background-color: #ffff00; color: #000000; font-weight: bold; }
 
 .org-svg { }
+
+footer {
+    font-size: x-small;
+    color: grey;
+}
+
+a {
+    text-decoration: auto;
+}
