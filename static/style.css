@@ -1,5 +1,6 @@
 body {
     max-width: 60em;
+    padding: 1em;
     margin: auto;
     font-family: Menlo, Monaco, monospace;
 }
