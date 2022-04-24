@@ -1,5 +1,0 @@
-#+TITLE: 文章列表
-
-#+INCLUDE: "theindex.inc"
-
-#+include: "sitemap.org" :lines "3-"

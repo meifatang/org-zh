@@ -1,5 +1,6 @@
 #+title: 由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理
 #+date: <2022-03-28 Mon>
+#+description: 由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理
 
 * 起因
 ** 因为需要为没有网口的宁美魔方 mini 主机，开启 PXE 网络启动和 Ubuntu 系统自动安装工作流

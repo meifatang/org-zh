@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<!-- 2022-04-24 Sun 16:46 -->
+<!-- 2022-04-24 Sun 19:52 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</title>
 <meta name="author" content="Felix M. Tang" />
+<meta name="description" content="由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理" />
 <meta name="generator" content="Org Mode" />
 <link rel="stylesheet" href="style.css" type="text/css">
 </head>
@@ -13,21 +14,21 @@
 <div id="preamble" class="status">
 <header>
   <nav>
-    <a href="index.html">Home</a>
-    <a href="about.html">About</a>
-    <a href="rss.xml" id="rss">RSS</a>
+    <a href="index.html">主页</a>
+    <a href="about.html">关于</a>
+    <a href="rss.xml" id="rss">订阅</a>
   </nav>
 </header>
 </div>
 <div id="content" class="content">
 <h1 class="title">由为宁美魔方 mini 主机配置 PXE 网络启动和自动安装，看 PXE 网络启动、Linux 内核编译、autoinstall、ISO 启动镜像打包和 Linux 启动原理</h1>
 
-<div id="outline-container-orga302c47" class="outline-2">
-<h2 id="orga302c47"><span class="section-number-2">1.</span> 起因</h2>
+<div id="outline-container-org8f9b7ca" class="outline-2">
+<h2 id="org8f9b7ca"><span class="section-number-2">1.</span> 起因</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org87ed7e3" class="outline-3">
-<h3 id="org87ed7e3"><span class="section-number-3">1.1.</span> 因为需要为没有网口的宁美魔方 mini 主机，开启 PXE 网络启动和 Ubuntu 系统自动安装工作流</h3>
+<div id="outline-container-org7bc3dd2" class="outline-3">
+<h3 id="org7bc3dd2"><span class="section-number-3">1.1.</span> 因为需要为没有网口的宁美魔方 mini 主机，开启 PXE 网络启动和 Ubuntu 系统自动安装工作流</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 以方便结合 Ubuntu 20.04 LTS Server 最新的 autoinstall 功能全自动批量安装系统。虽然该主机的 UEFI 有 PXE 网络启动选项，但因为苦于没有以太网接口，需要外接 USB 转以太网口转换器才可以连接网线。于是就有了一段漫长的踩坑旅程。
@@ -35,8 +36,8 @@
 </div>
 </div>
 
-<div id="outline-container-orga587354" class="outline-3">
-<h3 id="orga587354"><span class="section-number-3">1.2.</span> 所以一路探索挖了包括 PXE 搭建、Linux 内核编译、ISO 镜像打包和 Linux 启动等多个坑</h3>
+<div id="outline-container-org468ccd8" class="outline-3">
+<h3 id="org468ccd8"><span class="section-number-3">1.2.</span> 所以一路探索挖了包括 PXE 搭建、Linux 内核编译、ISO 镜像打包和 Linux 启动等多个坑</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 事后追溯，实现最终目标正确路径如下：
@@ -57,8 +58,8 @@
 </div>
 </div>
 
-<div id="outline-container-org2e3a0a4" class="outline-2">
-<h2 id="org2e3a0a4"><span class="section-number-2">2.</span> USB 转以太网转换器</h2>
+<div id="outline-container-orgdd21ad2" class="outline-2">
+<h2 id="orgdd21ad2"><span class="section-number-2">2.</span> USB 转以太网转换器</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 拿到的宁美魔方非常小巧，外部接口有两个 USB 3.0，一个用作电源接口的 USB-TypeC，一个 HDMI，一个 TF 卡槽和一个 3.5mm 耳机孔，没有提供 RJ-45 以太网接口。
@@ -78,8 +79,8 @@
 </div>
 </div>
 
-<div id="outline-container-org2a587b7" class="outline-2">
-<h2 id="org2a587b7"><span class="section-number-2">3.</span> 编译 iPXE 启动镜像</h2>
+<div id="outline-container-orgce38145" class="outline-2">
+<h2 id="orgce38145"><span class="section-number-2">3.</span> 编译 iPXE 启动镜像</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 除了动 UEFI 的心思，接下来的思路是将 PXE 动能单拎出来，先启动到一个第三方 PXE 上，通过这层跳板使用 PXE 服务。
@@ -111,16 +112,16 @@ sudo dd <span style="color: #a0522d;">if</span>=bin-x86_64-efi/ecm.usb <span sty
 </div>
 </div>
 
-<div id="outline-container-org2393835" class="outline-2">
-<h2 id="org2393835"><span class="section-number-2">4.</span> 部署 PXE 服务</h2>
+<div id="outline-container-org135946e" class="outline-2">
+<h2 id="org135946e"><span class="section-number-2">4.</span> 部署 PXE 服务</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 前面的步骤是为了给主机提供一个可以使用的 PXE 客户端，接下来的任务是创建一个 PXE 服务。PXE 服务需要 DHCP、TFTP 和一个外部文件服务（这里使用 HTTP ）。
 </p>
 </div>
 
-<div id="outline-container-org82be213" class="outline-3">
-<h3 id="org82be213"><span class="section-number-3">4.1.</span> HTTP 服务</h3>
+<div id="outline-container-org2fa3b6b" class="outline-3">
+<h3 id="org2fa3b6b"><span class="section-number-3">4.1.</span> HTTP 服务</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 托管 Linux 启动 ISO 镜像、autoinstall 需要的配置文件。简单用一个 Nginx 服务器完成。/var/www/html/ 目录下放 ubuntu-20.04.1-live-server-amd64.iso 文件；根据 autoinstall 要求建立一个 autoinstall 文件夹，里面建一个空 meta-data 文件，一个 user-data 文件，此文件内容如下：
@@ -196,8 +197,8 @@ sudo dd <span style="color: #a0522d;">if</span>=bin-x86_64-efi/ecm.usb <span sty
 </div>
 </div>
 
-<div id="outline-container-orgaf5f044" class="outline-3">
-<h3 id="orgaf5f044"><span class="section-number-3">4.2.</span> 带额外字段的 DHCP 服务，TFTP 服务</h3>
+<div id="outline-container-orgc43ef7e" class="outline-3">
+<h3 id="orgc43ef7e"><span class="section-number-3">4.2.</span> 带额外字段的 DHCP 服务，TFTP 服务</h3>
 <div class="outline-text-3" id="text-4-2">
 <p>
 DHCP 和 TFTP 是分开的两个服务，这里选用 dnsmasq 一个小型 DNS 服务附带 DHCP 和 TFTP 功能，可完美解决这里的需求。
@@ -289,8 +290,8 @@ initrd  /casper/initrd
 </div>
 </div>
 
-<div id="outline-container-orgc9e505d" class="outline-2">
-<h2 id="orgc9e505d"><span class="section-number-2">5.</span> 编译 Ubuntu 内核，并打包 iso 启动镜像</h2>
+<div id="outline-container-orgdbcce99" class="outline-2">
+<h2 id="orgdbcce99"><span class="section-number-2">5.</span> 编译 Ubuntu 内核，并打包 iso 启动镜像</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 接下来的方向应该是读取到 .iso 文件，开启一段愉快的网络安装体验，前提是上一步的 <code>/casper/vmlinuz</code> 有 USB 转以太网驱动的话。很遗憾，没有。从 Ubuntu Server 安装镜像提取到的 <code>/casper/vmlinuz</code> 不带此驱动，从对应桌面版 Ubuntu 安装镜像提取到的虽然有此驱动，但是无法使用 autoinstall 功能。
@@ -325,8 +326,8 @@ sudo chmod -Rv 700 /var/cache/apt/archives/partial/
 </div>
 </div>
 
-<div id="outline-container-org59484f3" class="outline-2">
-<h2 id="org59484f3"><span class="section-number-2">6.</span> 最终，使用修改过的 Ubuntu 启动镜像 TF 卡插卡直接启动</h2>
+<div id="outline-container-orgdb9d4ac" class="outline-2">
+<h2 id="orgdb9d4ac"><span class="section-number-2">6.</span> 最终，使用修改过的 Ubuntu 启动镜像 TF 卡插卡直接启动</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 实际中放弃了全自动安装过程，转而直接改造 .iso 镜像的启动参数，注入 auto install 自动启动，然后把这个镜像烧录进 TF 卡不也可以实现半自动化的安装吗！这时候发现一个可以无脑定制 Ubuntu 镜像的工具 Cubic，其讲 Ubuntu 镜像的结构直观得展示在出来，并可以随意改造。

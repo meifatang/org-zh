@@ -4,10 +4,7 @@
 #+description: 汤美法
 #+options: num:nil
 
-欢迎来到我的博客空间。
+欢迎来到我的博客
 
-* 项目
-** [[https://github.com/meifatang/.emacs.d][我的 Emacs 配置]]
-
-* 博客
+* 我的文章
 #+include: "sitemap.org" :lines "3-"
