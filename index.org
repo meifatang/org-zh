@@ -6,5 +6,4 @@
 
 欢迎来到我的博客
 
-* 我的文章
-#+include: "sitemap.org" :lines "3-"
+#+include: "sitemap.org" lines: "3-"
